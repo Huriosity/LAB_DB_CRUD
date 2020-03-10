@@ -1,8 +1,10 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;///////
+import java.util.HashMap;
+import java.util.Map;
 
 public class Handler extends Thread {
 
@@ -16,6 +18,14 @@ public class Handler extends Thread {
 
     private String requestPayload;
 
+    private static final Map<String, String> CONTENT_TYPES = new HashMap<>() {{
+        put("jpg", "image/jpeg");
+        put("html", "text/html");
+        put("json", "application/json");
+        put("txt", "text/plain");
+        put("", "text/plain");
+    }};
+
     Handler(Socket socket, String directory) {
         this.socket = socket;
         this.directory = directory;
@@ -28,6 +38,35 @@ public class Handler extends Thread {
             System.out.println("NOW we have url -  " + requestURL);
             switch (method){
                 case "GET":{
+                    if(isRequestInDatabase(requestURL)){
+                        System.out.println("is request in db");
+                        var filePath = Path.of(this.directory, "form.html");
+                        System.out.println("filepath = " + filePath);
+                        ////////////////////////////////////
+
+                        ////////////////////////////////////
+                        if (Files.exists(filePath) && !Files.isDirectory(filePath)) {
+                            var extension = this.getFileExtension(filePath);
+                            var type = CONTENT_TYPES.get(extension);
+                            var fileBytes = Files.readAllBytes(filePath);
+                            this.sendHeader(output, 202, "Accepted", type, fileBytes.length);
+                            output.write(fileBytes);
+                        }
+                    } else {
+                        var filePath = Path.of(this.directory, requestURL);
+                        if (Files.exists(filePath) && !Files.isDirectory(filePath)) {
+                            var extension = this.getFileExtension(filePath);
+                            var type = CONTENT_TYPES.get(extension);
+                            var fileBytes = Files.readAllBytes(filePath);
+                            this.sendHeader(output, 200, "OK", type, fileBytes.length);
+                            output.write(fileBytes);
+                        } else {
+                            var type = CONTENT_TYPES.get("text");
+                            this.sendHeader(output, 404, "Not Found", type, HTTP_MESSAGE.NOT_FOUND_404.length());
+                            output.write(HTTP_MESSAGE.NOT_FOUND_404.getBytes());
+                        }
+
+                    }
                     break;
                 }
                 case "POST": {
@@ -68,5 +107,22 @@ public class Handler extends Thread {
         requestPayload = payload.toString();
         System.out.println("Request payload is: " + requestPayload);
     }
-    
+
+    private Boolean isRequestInDatabase(String str){
+        return str.contains("?");
+    }
+
+    private String getFileExtension(Path path) {
+        var name = path.getFileName().toString();
+        var extensionStart = name.lastIndexOf(".");
+        return extensionStart == -1 ? "" : name.substring(extensionStart + 1);
+    }
+
+    private void sendHeader(OutputStream output, int statusCode, String statusText, String type, long lenght) {
+        var ps = new PrintStream(output);
+        ps.printf("HTTP/1.1 %s %s%n", statusCode, statusText);
+        ps.printf("Date: " + LocalDate.now()); ////////////////
+        ps.printf("Content-Type: %s%n", type);
+        ps.printf("Content-Length: %s%n%n", lenght);
+    }
 }
