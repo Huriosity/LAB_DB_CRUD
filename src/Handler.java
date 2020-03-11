@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;///////
 import java.util.HashMap;
 import java.util.Map;
@@ -40,17 +41,25 @@ public class Handler extends Thread {
                 case "GET":{
                     if(isRequestInDatabase(requestURL)){
                         System.out.println("is request in db");
-                        var filePath = Path.of(this.directory, "form.html");
-                        System.out.println("filepath = " + filePath);
+                        var formTemplate = Path.of(this.directory, "formTemplate.html");
+                        var form = Path.of(this.directory, "form.html");
+                        if (!Files.exists(form)){
+                            File _form = new File(form.toString());
+                        }
+                        Files.copy(formTemplate, form, StandardCopyOption.REPLACE_EXISTING);
                         ////////////////////////////////////
-                        Database.getAllInfoFromDatabaseAndWriteInFile(filePath.toString());
+                        Database.getAllInfoFromDatabaseAndWriteInFile(form.toString());
                         ////////////////////////////////////
-                        if (Files.exists(filePath) && !Files.isDirectory(filePath)) {
-                            var extension = this.getFileExtension(filePath);
+                        if (Files.exists(form) && !Files.isDirectory(form)) {
+                            var extension = this.getFileExtension(form);
                             var type = CONTENT_TYPES.get(extension);
-                            var fileBytes = Files.readAllBytes(filePath);
+                            var fileBytes = Files.readAllBytes(form);
                             this.sendHeader(output, 202, "Accepted", type, fileBytes.length);
                             output.write(fileBytes);
+                        }
+                        boolean deleteForm = form.toFile().delete();
+                        if (deleteForm){
+                            System.out.println("form deleted");
                         }
                     } else {
                         var filePath = Path.of(this.directory, requestURL);
