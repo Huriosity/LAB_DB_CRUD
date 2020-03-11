@@ -43,7 +43,7 @@ public class Handler extends Thread {
                         var filePath = Path.of(this.directory, "form.html");
                         System.out.println("filepath = " + filePath);
                         ////////////////////////////////////
-
+                        Database.getAllInfoFromDatabaseAndWriteInFile(filePath.toString());
                         ////////////////////////////////////
                         if (Files.exists(filePath) && !Files.isDirectory(filePath)) {
                             var extension = this.getFileExtension(filePath);
@@ -93,7 +93,7 @@ public class Handler extends Thread {
         String firstLine = br.readLine();
         method = firstLine.split(" ")[0];
         requestURL = firstLine.split(" ")[1];
-        System.out.println("first = " + firstLine);
+        System.out.println("firstLine = " + firstLine);
         String headerLine = null;
         while((headerLine = br.readLine()).length() != 0){
             System.out.println(headerLine);
