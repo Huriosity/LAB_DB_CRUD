@@ -19,8 +19,8 @@ final public class ConfigLoader {
                 System.out.println(headerLine);
                 // regex = all spaces include multiply spaces
                 headerLine  = headerLine.replaceAll("\\s+","");
-                firstHalf.add(headerLine.split("=")[0]);
-                secondHalf.add(headerLine.split("=")[1]);
+                firstHalf.add(headerLine.split("=",2)[0]);
+                secondHalf.add(headerLine.split("=",2)[1]);
             }
             setEnv(firstHalf,secondHalf);
 
