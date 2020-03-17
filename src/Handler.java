@@ -132,7 +132,7 @@ public class Handler extends Thread {
     private void sendHeader(OutputStream output, int statusCode, String statusText, String type, long lenght) {
         var ps = new PrintStream(output);
         ps.printf("HTTP/1.1 %s %s%n", statusCode, statusText);
-        ps.printf("Date: " + LocalDate.now()); ////////////////
+        ps.printf("Date: %s%n", LocalDate.now()); ////////////////
         ps.printf("Content-Type: %s%n", type);
         ps.printf("Content-Length: %s%n%n", lenght);
     }
