@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;///////
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,6 +76,11 @@ public class Handler extends Thread {
                     break;
                 }
                 case "POST": {
+                    ArrayList<ArrayList<String>> keyValuePair = parseRequestPayload();
+                    for(int i = 0; i < keyValuePair.get(0).size(); i++){
+                        System.out.println("fist = " + keyValuePair.get(0).get(i));
+                        System.out.println("second = " + keyValuePair.get(1).get(i));
+                    }
                     break;
                 }
                 case "PUT": {
@@ -129,5 +135,19 @@ public class Handler extends Thread {
         ps.printf("Date: " + LocalDate.now()); ////////////////
         ps.printf("Content-Type: %s%n", type);
         ps.printf("Content-Length: %s%n%n", lenght);
+    }
+
+    private ArrayList<ArrayList<String>> parseRequestPayload(){
+        ArrayList<ArrayList<String>> HalvesOfParamenter = new ArrayList<ArrayList<String>>();
+        for(int i = 0;i < 2; i++) {
+            HalvesOfParamenter.add(new ArrayList<String>());
+        }
+        int i = 0;
+        for (String retval : requestPayload.split("&")) {
+            HalvesOfParamenter.get(0).add(retval.split("=",2)[0]);
+            HalvesOfParamenter.get(1).add(retval.split("=",2)[1]);
+            i++;
+        }
+        return HalvesOfParamenter;
     }
 }
