@@ -57,10 +57,6 @@ public class Handler extends Thread {
                             this.sendHeader(output, 202, "Accepted", type, fileBytes.length);
                             output.write(fileBytes);
                         }
-                        boolean deleteForm = form.toFile().delete();
-                        if (deleteForm){
-                            System.out.println("form deleted");
-                        }
                     } else {
                         var filePath = Path.of(this.directory, requestURL);
                         if (Files.exists(filePath) && !Files.isDirectory(filePath)) {
