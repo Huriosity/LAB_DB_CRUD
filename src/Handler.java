@@ -1,3 +1,4 @@
+import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -101,9 +102,17 @@ public class Handler extends Thread {
                     break;
                 }
                 case "PUT": {
+                    System.out.println("this is put method");
+                    var type = CONTENT_TYPES.get("text");
+                    this.sendHeader(output, 204, HTTP_MESSAGE.NO_CONTENT_204, type, HTTP_MESSAGE.NO_CONTENT_204.length());
+                    output.write(HTTP_MESSAGE.NO_CONTENT_204.getBytes());
                     break;
                 }
                 case "DELETE": {
+                    System.out.println("this is delete method");
+                    var type = CONTENT_TYPES.get("text");
+                    this.sendHeader(output, 204, HTTP_MESSAGE.NO_CONTENT_204, type, HTTP_MESSAGE.NO_CONTENT_204.length());
+                    output.write(HTTP_MESSAGE.NO_CONTENT_204.getBytes());
                     break;
                 }
 
@@ -131,8 +140,12 @@ public class Handler extends Thread {
         while(br.ready()){
             payload.append((char) br.read());
         }
-        System.out.println("Payload data is: "+payload.toString());
+        // System.out.println("Payload data is: "+payload.toString());
         requestPayload = payload.toString();
+        System.out.println("check method = " + method);
+        if (method.equals("POST")) {
+            checkPayloadForMethodValue();
+        }
         System.out.println("Request payload is: " + requestPayload);
     }
 
@@ -166,5 +179,39 @@ public class Handler extends Thread {
             i++;
         }
         return HalvesOfParamenter;
+    }
+
+    private void checkPayloadForMethodValue(){
+        // int startIndex = ;
+        String result = "";
+        int endIndex = requestPayload.indexOf("_isMethod") + "_isMethod".length();
+        for(int i = endIndex + 1; i < requestPayload.length();i++){
+            if(requestPayload.charAt(i) == '&'){
+                break;
+            }
+            result += requestPayload.charAt(i);
+        }
+        if(result.equals("put")){
+            method = "PUT";
+            eraseMethodPart(result);
+        } else if (result.equals("delete")) {
+            method = "DELETE";
+            eraseMethodPart(result);
+        }
+    }
+
+    private void eraseMethodPart(String result) {
+        requestPayload = requestPayload.replace("_isMethod="+result,"");
+        if (requestPayload.charAt(requestPayload.length()-1) == '&'){
+            System.out.println("should erase");
+            requestPayload = removeLastChar(requestPayload);
+        }
+    }
+
+
+    public static String removeLastChar(String s) {
+        return (s == null || s.length() == 0)
+                ? null
+                : (s.substring(0, s.length() - 1));
     }
 }
