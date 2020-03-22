@@ -81,6 +81,23 @@ public class Handler extends Thread {
                         System.out.println("fist = " + keyValuePair.get(0).get(i));
                         System.out.println("second = " + keyValuePair.get(1).get(i));
                     }
+                    Database.createNewRecordInTheDatabase(keyValuePair);
+                    var formTemplate = Path.of(this.directory, "formTemplate.html");
+                    var form = Path.of(this.directory, "form.html");
+                    if (!Files.exists(form)){
+                        File _form = new File(form.toString());
+                    }
+                    Files.copy(formTemplate, form, StandardCopyOption.REPLACE_EXISTING);
+                    ////////////////////////////////////
+                    Database.getAllInfoFromDatabaseAndWriteInFile(form.toString());
+                    ////////////////////////////////////
+                    if (Files.exists(form) && !Files.isDirectory(form)) {
+                        var extension = this.getFileExtension(form);
+                        var type = CONTENT_TYPES.get(extension);
+                        var fileBytes = Files.readAllBytes(form);
+                        this.sendHeader(output, 201, "CREATED", type, fileBytes.length);
+                        output.write(fileBytes);
+                    }
                     break;
                 }
                 case "PUT": {
