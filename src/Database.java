@@ -18,7 +18,7 @@ public class Database {
             try (Connection connection = DriverManager.getConnection(url, username,password)){
                 System.out.println("Connection to rus_ruller DB succesfull!");
                 Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                resultSet = statement.executeQuery("select * from ruller,ruller_town_relation,town,ruller_years_of_life WHERE (ruller.ruller_ID = ruller_town_relation.foreight_ruller_ID AND ruller_town_relation.town_name = town.town_name AND ruller_years_of_life.foreight_ruller_ID = ruller.ruller_ID);");
+                resultSet = statement.executeQuery("select * from ruller,ruller_town_relation,town WHERE (ruller.ruller_ID = ruller_town_relation.foreight_ruller_ID AND ruller_town_relation.foreight_town_ID = town.town_ID);");
                 ResultSetMetaData rsmd = resultSet.getMetaData();
                 int colNum = rsmd.getColumnCount();
                 int rowNum = 0;
@@ -120,6 +120,7 @@ public class Database {
             // 2nd request exist
             // ruller_years_of_life
             int last_ruller_id = getRullerId(ruller_firstname, ruller_patronomic, ruller_title);
+            int town_ID = getTownIdByTownName(town_name);
             sqlRequest = "INSERT ruller_years_of_life(foreight_ruller_ID,year_of_birth,year_of_death) VALUES (" +
                     last_ruller_id +",'" +  year_of_birth + "','" + year_of_death + "');";
             System.out.println("CONFIGURATE THIS sqlRequest: " + sqlRequest);
@@ -127,8 +128,8 @@ public class Database {
 
             // 3rd request exist
             // ruller_town_relation
-            sqlRequest = "INSERT ruller_town_relation(foreight_ruller_ID,town_name,start_year,end_year) VALUES (" +
-            last_ruller_id + ",'" + town_name + "'," + start_year + "," + end_year + ");";
+            sqlRequest = "INSERT ruller_town_relation(foreight_ruller_ID,foreight_town_ID,start_year,end_year) VALUES (" +
+            last_ruller_id + "," + town_ID + "," + start_year + "," + end_year + ");";
             System.out.println("CONFIGURATE THIS sqlRequest: " + sqlRequest);
             executeTheGivenСommandForTheDatabase(sqlRequest);
 
@@ -138,8 +139,9 @@ public class Database {
 
             // 3rd request exist
             // ruller_town_relation
-            sqlRequest = "INSERT ruller_town_relation(foreight_ruller_ID,town_name,start_year,end_year) VALUES (" +
-                    ruller_id + ",'" + town_name + "'," + start_year + "," + end_year + ");";
+            int town_ID = getTownIdByTownName(town_name);
+            sqlRequest = "INSERT ruller_town_relation(foreight_ruller_ID,foreight_town_ID,start_year,end_year) VALUES (" +
+                    ruller_id + "," + town_ID + "," + start_year + "," + end_year + ");";
             System.out.println("CONFIGURATE THIS sqlRequest: " + sqlRequest);
             executeTheGivenСommandForTheDatabase(sqlRequest);
 
@@ -159,17 +161,27 @@ public class Database {
         }
         return Integer.parseInt(str);
     }
-    // return -1 if the database does not have record with given ruller_firstname,ruller_patronomic,ruller_title
-    // return ruller_id if record exist
-    private static int getRullerId(String ruller_firstname, String ruller_patronomic, String ruller_title){
-        // select (ruller_ID) from ruller Where ruller_firstname = 'Рюрик' AND ruller_patronomic = '' AND ruller_title = '';
-        int id = -1;
 
+    private static int getRullerId(String ruller_firstname, String ruller_patronomic, String ruller_title){
         String sqlRequest = null;
         sqlRequest = "select (ruller_ID) from ruller WHERE ruller_firstname = '" + ruller_firstname +
                 "' AND ruller_patronomic = '" + ruller_patronomic + "' AND ruller_title = '" + ruller_title + "';";
 
         System.out.println("SQL REQUEST = " + sqlRequest);
+        return getSomeIdFromSqlRequest(sqlRequest);
+    }
+
+    private static int getTownIdByTownName(String town_name){
+        String sqlRequest = null;
+        sqlRequest = "select (town_ID) from town WHERE town_name = '" + town_name + "';";
+        System.out.println("SQL REQUEST = " + sqlRequest);
+        return getSomeIdFromSqlRequest(sqlRequest);
+    }
+
+    // return -1 if the database does not have record
+    // return id if record exist
+    private static int getSomeIdFromSqlRequest(String sqlRequest){
+        int id = -1;
         ResultSet resultSet = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
@@ -181,7 +193,7 @@ public class Database {
                 while (resultSet.next()) {// тУТ ДВИЖЕНИЕ ПО ROW
                     id = resultSet.getInt(1);
                 }
-                System.out.println("GET RULLER_ID = " + id);
+                System.out.println("GET ID = " + id);
             }
         } catch (Exception ex){
             System.out.println("Connection failed...");
