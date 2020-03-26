@@ -148,6 +148,97 @@ public class Database {
         }
     }
 
+    public static void updateRecordInTheDatabase(ArrayList<ArrayList<String>> keyValuePair){
+
+        String ruller_firstname = null;
+        String ruller_patronomic = null;
+        String ruller_title = null;
+        String year_of_birth = null;
+        String year_of_death = null;
+        String town_name = null;
+        int start_year = -1;
+        int end_year = -1;
+        int ruller_id = -1;
+        int old_town_id = -1;
+
+        String sqlRequest = null;
+
+        for (int i = 0; i < keyValuePair.get(0).size(); i++ ){
+
+            String currentKey = keyValuePair.get(0).get(i);
+            String currentValue = keyValuePair.get(1).get(i);
+
+            if (currentKey.equals("ruller_firstname")){
+                ruller_firstname = currentValue;
+
+            } else if(currentKey.equals("ruller_patronomic")){
+                ruller_patronomic = currentValue;
+
+            } else if(currentKey.equals("ruller_title")){
+                ruller_title = currentValue;
+
+            } else if(currentKey.equals("year_of_birth")){
+                year_of_birth = getYearsOfLifiFromKeyValuePair(currentValue);
+
+            } else if(currentKey.equals("year_of_death")){
+                year_of_death = getYearsOfLifiFromKeyValuePair(currentValue);
+
+            } else if(currentKey.equals("town_name")){
+                town_name = currentValue;
+
+            } else if(currentKey.equals("start_year")){
+                start_year = getIntFromKeyValuePair(currentValue);
+
+            } else if(currentKey.equals("end_year")){
+                end_year = getIntFromKeyValuePair(currentValue);
+
+            } else if (currentKey.equals("ruller_ID")){
+                ruller_id = getIntFromKeyValuePair(currentValue);
+
+            } else if (currentKey.equals("foreight_town_ID")){
+                old_town_id = getIntFromKeyValuePair(currentValue);
+
+            }
+        }
+
+        int foreight_town_ID = getTownIdByTownName(town_name);
+
+        sqlRequest = "UPDATE ruller_years_of_life SET year_of_birth = '" + year_of_birth + "',year_of_death = '"
+                + year_of_death + "' WHERE foreight_ruller_ID = " + ruller_id + ";";
+        System.out.println("CONFIGURATE THIS sqlRequest: " + sqlRequest);
+        executeTheGivenСommandForTheDatabase(sqlRequest);
+
+        if (foreight_town_ID == -1){
+            sqlRequest = "INSERT town(town_name) VALUES ('" + town_name + "');";
+            System.out.println("CONFIGURATE THIS sqlRequest: " + sqlRequest);
+            executeTheGivenСommandForTheDatabase(sqlRequest);
+
+            foreight_town_ID = getTownIdByTownName(town_name);
+            sqlRequest = "UPDATE ruller_town_relation SET start_year = "
+                    + start_year + ", end_year = " + end_year + ", foreight_town_ID = " + foreight_town_ID +
+                    " WHERE foreight_ruller_ID = " + ruller_id +
+                    " AND foreight_town_ID = " + old_town_id + ";";
+
+            executeTheGivenСommandForTheDatabase(sqlRequest);
+        } else {
+
+            sqlRequest = "UPDATE ruller_town_relation SET start_year = "
+                    + start_year + ", end_year = " + end_year + ", foreight_town_ID = " + foreight_town_ID +
+                    " WHERE foreight_ruller_ID = " + ruller_id +
+                    " AND foreight_town_ID = " + old_town_id + ";";
+
+            System.out.println("CONFIGURATE THIS sqlRequest: " + sqlRequest);
+            executeTheGivenСommandForTheDatabase(sqlRequest);
+        }
+
+        sqlRequest = "UPDATE ruller SET ruller_firstname = '" + ruller_firstname + "', ruller_patronomic = '" +
+                ruller_patronomic + "', ruller_title = '" + ruller_title + "' WHERE ruller_ID = " + ruller_id + ";" ;
+
+        System.out.println("CONFIGURATE THIS sqlRequest: " + sqlRequest);
+        executeTheGivenСommandForTheDatabase(sqlRequest);
+
+    }
+
     private static String getYearsOfLifiFromKeyValuePair(String str) {
         if(str.isEmpty()){
             return "UNKNOWN";
@@ -214,7 +305,6 @@ public class Database {
                 Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 resultSet = statement.executeQuery(sqlRequest);
                 String tmp = null;
-                int col = 1;
                 while (resultSet.next()) {// тУТ ДВИЖЕНИЕ ПО ROW
                     tmp = resultSet.getString(2);
                     System.out.println("TMP == " + tmp);
@@ -240,7 +330,6 @@ public class Database {
                 Statement statement = connection.createStatement();
                 int rows = statement.executeUpdate(sqlRequest);
                 System.out.printf("Added %d rows", rows);
-                // Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             }
         } catch (Exception ex){
             System.out.println("Connection failed...");

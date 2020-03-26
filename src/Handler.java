@@ -1,4 +1,5 @@
 import javax.swing.plaf.synth.SynthTextAreaUI;
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -103,9 +104,32 @@ public class Handler extends Thread {
                 }
                 case "PUT": {
                     System.out.println("this is put method");
-                    var type = CONTENT_TYPES.get("text");
+
+                    ArrayList<ArrayList<String>> keyValuePair = parseRequestPayload();
+                    for(int i = 0; i < keyValuePair.get(0).size(); i++){
+                        System.out.println("fist = " + keyValuePair.get(0).get(i));
+                        System.out.println("second = " + keyValuePair.get(1).get(i));
+                    }
+                    Database.updateRecordInTheDatabase(keyValuePair);
+                    var formTemplate = Path.of(this.directory, "formTemplate.html");
+                    var form = Path.of(this.directory, "form.html");
+                    if (!Files.exists(form)){
+                        File _form = new File(form.toString());
+                    }
+                    Files.copy(formTemplate, form, StandardCopyOption.REPLACE_EXISTING);
+                    ////////////////////////////////////
+                    Database.getAllInfoFromDatabaseAndWriteInFile(form.toString());
+                    ////////////////////////////////////
+                    if (Files.exists(form) && !Files.isDirectory(form)) {
+                        var extension = this.getFileExtension(form);
+                        var type = CONTENT_TYPES.get(extension);
+                        var fileBytes = Files.readAllBytes(form);
+                        this.sendHeader(output, 201, "CREATED", type, fileBytes.length);///
+                        output.write(fileBytes);
+                    }
+                    /*var type = CONTENT_TYPES.get("text");
                     this.sendHeader(output, 204, HTTP_MESSAGE.NO_CONTENT_204, type, HTTP_MESSAGE.NO_CONTENT_204.length());
-                    output.write(HTTP_MESSAGE.NO_CONTENT_204.getBytes());
+                    output.write(HTTP_MESSAGE.NO_CONTENT_204.getBytes());*/
                     break;
                 }
                 case "DELETE": {
