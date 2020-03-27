@@ -1,5 +1,3 @@
-import javax.swing.plaf.synth.SynthTextAreaUI;
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -124,12 +122,9 @@ public class Handler extends Thread {
                         var extension = this.getFileExtension(form);
                         var type = CONTENT_TYPES.get(extension);
                         var fileBytes = Files.readAllBytes(form);
-                        this.sendHeader(output, 201, "CREATED", type, fileBytes.length);///
+                        this.sendHeader(output, 200, HTTP_MESSAGE.OK_200, type, fileBytes.length);///
                         output.write(fileBytes);
                     }
-                    /*var type = CONTENT_TYPES.get("text");
-                    this.sendHeader(output, 204, HTTP_MESSAGE.NO_CONTENT_204, type, HTTP_MESSAGE.NO_CONTENT_204.length());
-                    output.write(HTTP_MESSAGE.NO_CONTENT_204.getBytes());*/
                     break;
                 }
                 case "DELETE": {

@@ -6,7 +6,6 @@ import java.util.Map;
 final public class ConfigLoader {
 
     public static void loadConfigENV(String file){
-         // FileInputStream fis = null;
         FileReader fr = null;
         BufferedReader br = null;
         try {
