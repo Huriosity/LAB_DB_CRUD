@@ -188,16 +188,16 @@ public class Database {
             }
         }
 
-        int foreight_town_ID = getTownIdByTownName(townName);
+        int foreightTownId = getTownIdByTownName(townName);
 
-        if (foreight_town_ID == -1){
+        if (foreightTownId == -1){
             String sqlRequest = "INSERT town(town_name) VALUES ('" + townName + "');";
 
             executeTheGivenСommandForTheDatabase(sqlRequest);
 
-            foreight_town_ID = getTownIdByTownName(townName);
+            foreightTownId = getTownIdByTownName(townName);
             sqlRequest = "UPDATE ruller_town_relation SET start_year = "
-                    + startYearOfReign + ", end_year = " + endYearOfReign + ", foreight_town_ID = " + foreight_town_ID +
+                    + startYearOfReign + ", end_year = " + endYearOfReign + ", foreight_town_ID = " + foreightTownId +
                     " WHERE foreight_ruller_ID = " + rullerId +
                     " AND foreight_town_ID = " + oldTownId + ";";
 
@@ -205,7 +205,7 @@ public class Database {
         } else {
 
             String sqlRequestIntoRullerTownRelation = "UPDATE ruller_town_relation SET start_year = "
-                    + startYearOfReign + ", end_year = " + endYearOfReign + ", foreight_town_ID = " + foreight_town_ID +
+                    + startYearOfReign + ", end_year = " + endYearOfReign + ", foreight_town_ID = " + foreightTownId +
                     " WHERE foreight_ruller_ID = " + rullerId +
                     " AND foreight_town_ID = " + oldTownId + ";";
 
@@ -221,6 +221,60 @@ public class Database {
 
         executeSeveralTheGivenСommandsForTheDatabase(sqlRequestIntoRullerYearsOfLife,sqlRequestIntoRuller);
 
+    }
+
+    public static void deleteRecordInTheDatabase(ArrayList<ArrayList<String>> keyValuePair){
+        int foreighRullerId = -1;
+        int foreightTownId = -1;
+        int startYearOfReign = -1;
+        int endYearOfReign = -1;
+
+        for (int i = 0; i < keyValuePair.get(0).size(); i++ ) {
+
+            String currentKey = keyValuePair.get(0).get(i);
+            String currentValue = keyValuePair.get(1).get(i);
+
+            if (currentKey.equals("foreight_ruller_ID")) {
+                foreighRullerId = getIntFromKeyValuePair(currentValue);
+
+            } else if (currentKey.equals("foreight_town_ID")) {
+                foreightTownId = getIntFromKeyValuePair(currentValue);
+
+            } else if (currentKey.equals("start_year")) {
+                startYearOfReign = getIntFromKeyValuePair(currentValue);
+
+            } else if (currentKey.equals("end_year")) {
+                endYearOfReign = getIntFromKeyValuePair(currentValue);
+
+            }
+        }
+
+        int existingRullerRelations = getRullerCountOfExistingRullerTownRelationships(foreighRullerId);
+        int existingTownRelations = getTownCountOfExistingRullerTownRelationships(foreightTownId);
+        String sqlRequestDeleteFromRullerTownRelation = "DELETE FROM ruller_town_relation WHERE foreight_ruller_ID = " +
+                foreighRullerId + " AND foreight_town_ID = " + foreightTownId + " AND start_year = "
+                + startYearOfReign + " AND end_year = " + endYearOfReign + ";";
+
+        if (existingRullerRelations == 1){
+            String sqlRequestDeleteFromRuller = "DELETE FROM ruller WHERE ruller_ID = " + foreighRullerId;
+            String sqlRequestDeleteFromRullerYearsOfLife = "DELETE FROM ruller_years_of_life WHERE " +
+                    "foreight_ruller_ID = " +  foreighRullerId;
+            if (existingTownRelations == 1 ) {
+                String sqlRequestDeleteFromTown = "DELETE FROM TOWN WHERE town_ID = " + foreightTownId;
+                executeSeveralTheGivenСommandsForTheDatabase(sqlRequestDeleteFromRullerTownRelation,
+                        sqlRequestDeleteFromRullerYearsOfLife, sqlRequestDeleteFromRuller, sqlRequestDeleteFromTown);
+            } else {
+                executeSeveralTheGivenСommandsForTheDatabase(sqlRequestDeleteFromRullerTownRelation,
+                        sqlRequestDeleteFromRullerYearsOfLife,sqlRequestDeleteFromRuller);
+            }
+
+        } else if ( existingTownRelations == 1 ) {
+            String sqlRequestDeleteFromTown = "DELETE FROM TOWN WHERE town_ID = " + foreightTownId;
+            executeSeveralTheGivenСommandsForTheDatabase(sqlRequestDeleteFromRullerTownRelation,
+                    sqlRequestDeleteFromTown);
+        } else {
+            executeTheGivenСommandForTheDatabase(sqlRequestDeleteFromRullerTownRelation);
+        }
     }
 
     private static String getYearsOfLifiFromKeyValuePair(String str) {
@@ -243,20 +297,32 @@ public class Database {
                 "' AND ruller_patronomic = '" + ruller_patronomic + "' AND ruller_title = '" + ruller_title + "';";
 
         System.out.println("SQL REQUEST = " + sqlRequest);
-        return getSomeIdFromSqlRequest(sqlRequest);
+        return getSomeIntValueFromTheFirstCellFromSqlRequest(sqlRequest);
     }
 
     private static int getTownIdByTownName(String town_name){
         String sqlRequest = null;
         sqlRequest = "select (town_ID) from town WHERE town_name = '" + town_name + "';";
         System.out.println("SQL REQUEST = " + sqlRequest);
-        return getSomeIdFromSqlRequest(sqlRequest);
+        return getSomeIntValueFromTheFirstCellFromSqlRequest(sqlRequest);
+    }
+
+    private static int getRullerCountOfExistingRullerTownRelationships(int ruller_ID){
+        String sqlRequest = "SELECT COUNT(*) FROM ruller_town_relation WHERE foreight_ruller_ID = " + ruller_ID +  ";";
+        return getSomeIntValueFromTheFirstCellFromSqlRequest(sqlRequest);
+
+    }
+
+    private static int getTownCountOfExistingRullerTownRelationships(int town_ID){
+        String sqlRequest = "SELECT COUNT(*) FROM ruller_town_relation WHERE foreight_town_ID = " + town_ID +  ";";
+        return getSomeIntValueFromTheFirstCellFromSqlRequest(sqlRequest);
+
     }
 
     // return -1 if the database does not have record
     // return id if record exist
-    private static int getSomeIdFromSqlRequest(String sqlRequest){
-        int id = -1;
+    private static int getSomeIntValueFromTheFirstCellFromSqlRequest(String sqlRequest){
+        int ivalue = -1;
         ResultSet resultSet = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
@@ -266,16 +332,16 @@ public class Database {
                 Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 resultSet = statement.executeQuery(sqlRequest);
                 while (resultSet.next()) {// тУТ ДВИЖЕНИЕ ПО ROW
-                    id = resultSet.getInt(1);
+                    ivalue = resultSet.getInt(1);
                 }
-                System.out.println("GET ID = " + id);
+                System.out.println("GET ivalue = " + ivalue);
             }
         } catch (Exception ex){
             System.out.println("Connection failed...");
             System.out.println(ex);
         }
 
-        return id;
+        return ivalue;
     }
 
     private static Boolean checkFieldExistence(String willCheck, String whereCkeck){
