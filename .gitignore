@@ -2,3 +2,4 @@
 out
 *.properties
 LAB_DB_CRUD.iml
+*.log

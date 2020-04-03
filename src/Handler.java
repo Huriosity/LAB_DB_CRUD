@@ -3,7 +3,8 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;///////
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +19,13 @@ public class Handler extends Thread {
 
     private String requestURL;
 
+    private String Host;
+
+    private String UserAgent;
+
     private String requestPayload;
+
+    private DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
     private static final Map<String, String> CONTENT_TYPES = new HashMap<>() {{
         put("jpg", "image/jpeg");
@@ -55,7 +62,11 @@ public class Handler extends Thread {
                             var extension = this.getFileExtension(form);
                             var type = CONTENT_TYPES.get(extension);
                             var fileBytes = Files.readAllBytes(form);
-                            this.sendHeader(output, 202, "Accepted", type, fileBytes.length);
+                            this.sendHeader(output, 202, HTTP_MESSAGE.ACCEPTED_202, type, fileBytes.length);
+
+                            LogSystem.acces_log(Host, DTF.format(LocalDateTime.now()).toString(),method + " " +
+                                    requestURL + "HTTP/1.1", 202,fileBytes.length, requestURL, UserAgent);
+
                             output.write(fileBytes);
                         }
                     } else {
@@ -65,10 +76,19 @@ public class Handler extends Thread {
                             var type = CONTENT_TYPES.get(extension);
                             var fileBytes = Files.readAllBytes(filePath);
                             this.sendHeader(output, 200, "OK", type, fileBytes.length);
+
+                            LogSystem.acces_log(Host, DTF.format(LocalDateTime.now()).toString(),method + " " +
+                                    requestURL + "HTTP/1.1", 200,fileBytes.length,requestURL,UserAgent);
+
                             output.write(fileBytes);
                         } else {
                             var type = CONTENT_TYPES.get("text");
                             this.sendHeader(output, 404, "Not Found", type, HTTP_MESSAGE.NOT_FOUND_404.length());
+
+                            LogSystem.acces_log(Host, DTF.format(LocalDateTime.now()).toString(),method + " " +
+                                    requestURL + "HTTP/1.1", 404,HTTP_MESSAGE.NOT_FOUND_404.length(),
+                                    requestURL, UserAgent);
+
                             output.write(HTTP_MESSAGE.NOT_FOUND_404.getBytes());
                         }
 
@@ -96,6 +116,10 @@ public class Handler extends Thread {
                         var type = CONTENT_TYPES.get(extension);
                         var fileBytes = Files.readAllBytes(form);
                         this.sendHeader(output, 201, "CREATED", type, fileBytes.length);
+
+                        LogSystem.acces_log(Host, DTF.format(LocalDateTime.now()).toString(),method + " " +
+                                requestURL + "HTTP/1.1", 201,fileBytes.length, requestURL, UserAgent);
+
                         output.write(fileBytes);
                     }
                     break;
@@ -122,7 +146,11 @@ public class Handler extends Thread {
                         var extension = this.getFileExtension(form);
                         var type = CONTENT_TYPES.get(extension);
                         var fileBytes = Files.readAllBytes(form);
-                        this.sendHeader(output, 200, HTTP_MESSAGE.OK_200, type, fileBytes.length);///
+                        this.sendHeader(output, 200, HTTP_MESSAGE.OK_200, type, fileBytes.length);
+
+                        LogSystem.acces_log(Host, DTF.format(LocalDateTime.now()).toString(),method + " " +
+                                requestURL + "HTTP/1.1", 200,fileBytes.length, requestURL, UserAgent);
+
                         output.write(fileBytes);
                     }
                     break;
@@ -150,7 +178,11 @@ public class Handler extends Thread {
                         var extension = this.getFileExtension(form);
                         var type = CONTENT_TYPES.get(extension);
                         var fileBytes = Files.readAllBytes(form);
-                        this.sendHeader(output, 200, HTTP_MESSAGE.OK_200, type, fileBytes.length);///
+                        this.sendHeader(output, 200, HTTP_MESSAGE.OK_200, type, fileBytes.length);
+
+                        LogSystem.acces_log(Host, DTF.format(LocalDateTime.now()).toString(),method + " " +
+                                requestURL + "HTTP/1.1", 200,fileBytes.length, requestURL, UserAgent);
+
                         output.write(fileBytes);
                     }
                     break;
@@ -170,10 +202,15 @@ public class Handler extends Thread {
         String firstLine = br.readLine();
         method = firstLine.split(" ")[0];
         requestURL = firstLine.split(" ")[1];
+        Host = br.readLine().split(" ")[1];;
+        System.out.println("Host = " + Host);
         System.out.println("firstLine = " + firstLine);
         String headerLine = null;
         while((headerLine = br.readLine()).length() != 0){
             System.out.println(headerLine);
+            if(headerLine.contains("User-Agent")){
+                UserAgent = headerLine.split(" ",2)[1];
+            }
         }
 
         StringBuilder payload = new StringBuilder();
@@ -202,7 +239,7 @@ public class Handler extends Thread {
     private void sendHeader(OutputStream output, int statusCode, String statusText, String type, long lenght) {
         var ps = new PrintStream(output);
         ps.printf("HTTP/1.1 %s %s%n", statusCode, statusText);
-        ps.printf("Date: %s%n", LocalDate.now()); ////////////////
+        ps.printf("Date: %s%n", DTF.format(LocalDateTime.now())); ////////////////
         ps.printf("Content-Type: %s%n", type);
         ps.printf("Content-Length: %s%n%n", lenght);
     }
