@@ -43,7 +43,7 @@ public class Handler extends Thread {
                     if(isRequestInDatabase(requestURL)){
                         System.out.println("is request in db");
                         var formTemplate = Path.of(this.directory, "formTemplate.html");
-                        var form = Path.of(this.directory, "form.html");
+                        var form = Path.of(this.directory, "index.html");
                         if (!Files.exists(form)){
                             File _form = new File(form.toString());
                         }
@@ -83,7 +83,7 @@ public class Handler extends Thread {
                     }
                     Database.createNewRecordInTheDatabase(keyValuePair);
                     var formTemplate = Path.of(this.directory, "formTemplate.html");
-                    var form = Path.of(this.directory, "form.html");
+                    var form = Path.of(this.directory, "index.html");
                     if (!Files.exists(form)){
                         File _form = new File(form.toString());
                     }
@@ -110,7 +110,7 @@ public class Handler extends Thread {
                     }
                     Database.updateRecordInTheDatabase(keyValuePair);
                     var formTemplate = Path.of(this.directory, "formTemplate.html");
-                    var form = Path.of(this.directory, "form.html");
+                    var form = Path.of(this.directory, "index.html");
                     if (!Files.exists(form)){
                         File _form = new File(form.toString());
                     }
@@ -138,7 +138,7 @@ public class Handler extends Thread {
                     Database.deleteRecordInTheDatabase(keyValuePair);
 
                     var formTemplate = Path.of(this.directory, "formTemplate.html");
-                    var form = Path.of(this.directory, "form.html");
+                    var form = Path.of(this.directory, "index.html");
                     if (!Files.exists(form)){
                         File _form = new File(form.toString());
                     }
