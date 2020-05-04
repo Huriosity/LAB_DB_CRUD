@@ -97,10 +97,6 @@ public class Handler extends Thread {
                 }
                 case "POST": {
                     ArrayList<ArrayList<String>> keyValuePair = parseRequestPayload();
-                    for(int i = 0; i < keyValuePair.get(0).size(); i++){
-                        System.out.println("fist = " + keyValuePair.get(0).get(i));
-                        System.out.println("second = " + keyValuePair.get(1).get(i));
-                    }
                     Database.createNewRecordInTheDatabase(keyValuePair);
                     var formTemplate = Path.of(this.directory, "formTemplate.html");
                     var form = Path.of(this.directory, "index.html");
@@ -128,10 +124,6 @@ public class Handler extends Thread {
                     System.out.println("this is put method");
 
                     ArrayList<ArrayList<String>> keyValuePair = parseRequestPayload();
-                    for(int i = 0; i < keyValuePair.get(0).size(); i++){
-                        System.out.println("fist = " + keyValuePair.get(0).get(i));
-                        System.out.println("second = " + keyValuePair.get(1).get(i));
-                    }
                     Database.updateRecordInTheDatabase(keyValuePair);
                     var formTemplate = Path.of(this.directory, "formTemplate.html");
                     var form = Path.of(this.directory, "index.html");
@@ -159,10 +151,6 @@ public class Handler extends Thread {
                     System.out.println("this is delete method");
 
                     ArrayList<ArrayList<String>> keyValuePair = parseRequestPayload();
-                    for(int i = 0; i < keyValuePair.get(0).size(); i++){
-                        System.out.println("fist = " + keyValuePair.get(0).get(i));
-                        System.out.println("second = " + keyValuePair.get(1).get(i));
-                    }
                     Database.deleteRecordInTheDatabase(keyValuePair);
 
                     var formTemplate = Path.of(this.directory, "formTemplate.html");
@@ -207,7 +195,7 @@ public class Handler extends Thread {
         System.out.println("firstLine = " + firstLine);
         String headerLine = null;
         while((headerLine = br.readLine()).length() != 0){
-            System.out.println(headerLine);
+            // System.out.println(headerLine);
             if(headerLine.contains("User-Agent")){
                 UserAgent = headerLine.split(" ",2)[1];
             }
@@ -217,9 +205,9 @@ public class Handler extends Thread {
         while(br.ready()){
             payload.append((char) br.read());
         }
-        // System.out.println("Payload data is: "+payload.toString());
+
         requestPayload = payload.toString();
-        System.out.println("check method = " + method);
+        System.out.println("method = " + method);
         if (method.equals("POST")) {
             checkPayloadForMethodValue();
         }
@@ -280,7 +268,6 @@ public class Handler extends Thread {
     private void eraseMethodPart(String result) {
         requestPayload = requestPayload.replace("_isMethod="+result,"");
         if (requestPayload.charAt(requestPayload.length()-1) == '&'){
-            System.out.println("should erase");
             requestPayload = removeLastChar(requestPayload);
         }
     }

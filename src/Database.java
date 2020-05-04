@@ -334,7 +334,6 @@ public class Database {
                 while (resultSet.next()) {// тУТ ДВИЖЕНИЕ ПО ROW
                     ivalue = resultSet.getInt(1);
                 }
-                System.out.println("GET ivalue = " + ivalue);
             }
         } catch (Exception ex){
             System.out.println("Connection failed...");
@@ -357,8 +356,6 @@ public class Database {
                 String tmp = null;
                 while (resultSet.next()) {// тУТ ДВИЖЕНИЕ ПО ROW
                     tmp = resultSet.getString(2);
-                    System.out.println("TMP == " + tmp);
-                    System.out.println("willcheck == " + willCheck);
                     if (tmp.equals( willCheck )){
                         return true;
                     }
@@ -379,8 +376,6 @@ public class Database {
                 System.out.println("Connection to rus_ruller DB succesfull!");
                 Statement statement = connection.createStatement();
                 System.out.println("Current sqlRequest = " + sqlRequest);
-                int rows = statement.executeUpdate(sqlRequest);
-                System.out.printf("Added %d rows", rows);
             }
         } catch (Exception ex){
             System.out.println("Connection failed...");
@@ -397,8 +392,6 @@ public class Database {
                 for(int i = 0; i < sqlRequest.length; i++) {
                     Statement statement = connection.createStatement();
                     System.out.println("Current sqlRequest = " + sqlRequest[i]);
-                    int rows = statement.executeUpdate(sqlRequest[i]);
-                    System.out.printf("Added %d rows", rows);
                 }
             }
         } catch (Exception ex){
