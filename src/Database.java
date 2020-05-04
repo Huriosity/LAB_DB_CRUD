@@ -376,6 +376,7 @@ public class Database {
                 System.out.println("Connection to rus_ruller DB succesfull!");
                 Statement statement = connection.createStatement();
                 System.out.println("Current sqlRequest = " + sqlRequest);
+                statement.executeUpdate(sqlRequest);
             }
         } catch (Exception ex){
             System.out.println("Connection failed...");
@@ -392,6 +393,7 @@ public class Database {
                 for(int i = 0; i < sqlRequest.length; i++) {
                     Statement statement = connection.createStatement();
                     System.out.println("Current sqlRequest = " + sqlRequest[i]);
+                    statement.executeUpdate(sqlRequest[i]);
                 }
             }
         } catch (Exception ex){
